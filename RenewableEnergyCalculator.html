@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renewable Energy Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+
+        .card {
+            margin-top: 20px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            text-align: center;
+        }
+
+        .result {
+            display: none;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1 class="text-center my-4">Renewable Energy Savings Calculator</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <label for="monthly-consumption" class="form-label">Enter your monthly electricity consumption (kWh)</label>
+                <input type="number" id="monthly-consumption" class="form-control" placeholder="e.g., 500">
+            </div>
+            <div class="col-md-6">
+                <button id="calculate-btn" class="btn btn-primary w-100 mt-4">Calculate Savings</button>
+            </div>
+        </div>
+
+        <div class="result row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h4>Estimated Savings with Renewable Energy</h4>
+                        <p id="annual-savings">Annual Savings: $0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="energyChart"></canvas>
+        </div>
+
+        <div class="row mt-4">
+            <table class="table table-bordered comparison-table">
+                <thead>
+                    <tr>
+                        <th>Energy Source</th>
+                        <th>Monthly Cost (Traditional)</th>
+                        <th>Monthly Cost (Renewable)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Traditional Energy</td>
+                        <td id="traditional-cost">$0</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Solar Energy</td>
+                        <td>-</td>
+                        <td id="renewable-cost">$0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const calculateButton = document.getElementById('calculate-btn');
+        const monthlyConsumptionInput = document.getElementById('monthly-consumption');
+        const resultSection = document.querySelector('.result');
+        const annualSavingsDisplay = document.getElementById('annual-savings');
+        const traditionalCostDisplay = document.getElementById('traditional-cost');
+        const renewableCostDisplay = document.getElementById('renewable-cost');
+
+        
+        const costPerKWhTraditional = 0.12; // USD per kWh for traditional energy
+        const costPerKWhSolar = 0.08; // USD per kWh for solar energy
+
+       
+        let energyChart = new Chart(document.getElementById('energyChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Traditional Energy', 'Solar Energy'],
+                datasets: [{
+                    label: 'Energy Costs (USD)',
+                    data: [0, 0], 
+                    backgroundColor: ['#FF5733', '#28a745'],
+                    borderColor: ['#c0392b', '#218838'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+       
+        function calculateSavings() {
+            const monthlyConsumption = parseFloat(monthlyConsumptionInput.value);
+            if (!monthlyConsumption || monthlyConsumption <= 0) {
+                alert('Please enter a valid energy consumption value.');
+                return;
+            }
+
+         
+            const traditionalMonthlyCost = monthlyConsumption * costPerKWhTraditional;
+            const renewableMonthlyCost = monthlyConsumption * costPerKWhSolar;
+
+            const annualSavings = (traditionalMonthlyCost - renewableMonthlyCost) * 12;
+
+            traditionalCostDisplay.textContent = `$${traditionalMonthlyCost.toFixed(2)}`;
+            renewableCostDisplay.textContent = `$${renewableMonthlyCost.toFixed(2)}`;
+            annualSavingsDisplay.textContent = `Annual Savings: $${annualSavings.toFixed(2)}`;
+
+            energyChart.data.datasets[0].data = [traditionalMonthlyCost, renewableMonthlyCost];
+            energyChart.update();
+
+            gsap.from(".result", { opacity: 0, y: 50, duration: 0.5 });
+            resultSection.style.display = 'block';
+        }
+        calculateButton.addEventListener('click', calculateSavings);
+
+    </script>
+</body>
+
+</html>

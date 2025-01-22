@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamified Recycling Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding-top: 50px;
+        }
+        
+        .container {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-bottom: 50px;
+        }
+        
+        .recycling-bin {
+            width: 150px;
+            height: 150px;
+            border: 2px dashed #aaa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 10px;
+            background-color: #e0f7fa;
+            transition: background-color 0.3s;
+        }
+
+        .recycling-bin:hover {
+            background-color: #b2ebf2;
+        }
+
+        .item {
+            width: 100px;
+            height: 100px;
+            background-color: #ffeb3b;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            user-select: none;
+            margin: 20px;
+        }
+
+        .item.correct {
+            background-color: #81c784;
+        }
+
+        .item.incorrect {
+            background-color: #e57373;
+        }
+
+        .score-board {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+
+        .timer {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+
+        .game-over {
+            font-size: 28px;
+            margin-top: 50px;
+            color: red;
+        }
+
+        .restart-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .restart-btn:hover {
+            background-color: #388e3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gamified Recycling Guide</h1>
+    
+    <div class="container">
+        <div class="recycling-bin" id="paper-bin">Paper</div>
+        <div class="recycling-bin" id="plastic-bin">Plastic</div>
+        <div class="recycling-bin" id="metal-bin">Metal</div>
+    </div>
+    
+    <div class="container" id="items-container">
+        <div class="item" id="item-paper" data-type="paper">Paper</div>
+        <div class="item" id="item-plastic" data-type="plastic">Plastic</div>
+        <div class="item" id="item-metal" data-type="metal">Metal</div>
+    </div>
+    
+    <div class="score-board" id="score">Score: 0</div>
+    <div class="timer" id="timer">Time: 60</div>
+    
+    <div class="game-over" id="game-over" style="display: none;">Game Over! Your Score: <span id="final-score"></span></div>
+    
+    <button class="restart-btn" id="restart-btn" style="display: none;" onclick="restartGame()">Restart</button>
+
+    <script>
+        let score = 0;
+        let timeLeft = 60;
+        let timerInterval;
+        let gameOver = false;
+
+        
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    document.getElementById('timer').textContent = `Time: ${timeLeft}`;
+                } else {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        
+        function endGame() {
+            clearInterval(timerInterval);
+            gameOver = true;
+            document.getElementById('game-over').style.display = 'block';
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('restart-btn').style.display = 'inline-block';
+        }
+
+       
+        function restartGame() {
+            score = 0;
+            timeLeft = 60;
+            gameOver = false;
+            document.getElementById('score').textContent = `Score: ${score}`;
+            document.getElementById('timer').textContent = `Time: ${timeLeft}`;
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('restart-btn').style.display = 'none';
+            document.querySelectorAll('.item').forEach(item => {
+                item.classList.remove('correct', 'incorrect');
+            });
+            startTimer();
+        }
+
+        function onDragStart(event) {
+            event.dataTransfer.setData('item-type', event.target.dataset.type);
+        }
+
+        function onDrop(event) {
+            event.preventDefault();
+            const droppedItemType = event.dataTransfer.getData('item-type');
+            const targetBinType = event.target.id.split('-')[0];
+
+            if (!gameOver) {
+                if (droppedItemType === targetBinType) {
+                    event.target.style.backgroundColor = '#4caf50';
+                    document.getElementById('item-' + droppedItemType).classList.add('correct');
+                    score++;
+                    document.getElementById('score').textContent = `Score: ${score}`;
+                } else {
+                    event.target.style.backgroundColor = '#f44336';
+                    document.getElementById('item-' + droppedItemType).classList.add('incorrect');
+                }
+                setTimeout(() => {
+                    event.target.style.backgroundColor = '#e0f7fa';
+                }, 500);
+            }
+        }
+
+        
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+      
+        document.querySelectorAll('.item').forEach(item => {
+            item.setAttribute('draggable', true);
+            item.addEventListener('dragstart', onDragStart);
+        });
+
+        document.querySelectorAll('.recycling-bin').forEach(bin => {
+            bin.addEventListener('dragover', allowDrop);
+            bin.addEventListener('drop', onDrop);
+        });
+
+       
+        startTimer();
+    </script>
+</body>
+</html>
